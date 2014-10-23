@@ -11,6 +11,7 @@ module.exports = {
 
   /**
    * `PoliceukController.bicycletheft()`
+   * example: http://localhost:1337/policeuk/bicycletheft?lat=51.496664&lon=-0.128617&year=2014&month=01
    */
   bicycletheft: function (req, res) {
     'use strict';
@@ -35,7 +36,7 @@ module.exports = {
         });
         return res.json(bicycleThefts);
       });
-      return 'meh';
+       return true;
     }
   }
 };
