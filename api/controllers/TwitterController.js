@@ -7,8 +7,6 @@
 
 var request = require('request');
 
-var twitter, twitterToken, twitterSecret, token;
-
 module.exports = {
 
   get_tweets: function () {
@@ -18,26 +16,38 @@ module.exports = {
   twitter: function (req, res) {
     'use strict';
     var t = sails.config.twitter;
-    if (!t.requestToken) {
-      if (!t.object) {
-        var twitterAPI = require('node-twitter-api');
-        t.object = new twitterAPI({
-          consumerKey: t.api_key,
-          consumerSecret: t.api_secret
-        });
-      }
-      t.object.getRequestToken(function(error, requestToken, requestTokenSecret, results) {
-        if (error) {
-          console.log("Error getting OAuth request token : ", error);
-          return res.send('{}');
-        } else {
-          console.log("got token");
-          t.requestToken = requestToken;
-          t.requestTokenSecret = requestTokenSecret;
-          return res.send('{}');
-        }
-      });
-    }
-    return res.send('{}');
+
+    // URL encode key/secret
+    var enc_key	= encodeURIComponent(t.api_key);
+    var enc_secret = encodeURIComponent(t.api_secret);
+
+    // Concatenate key/secret (seperated with colon)
+    var keysecret = enc_key + ':' + enc_secret;
+
+    // Base64 encode key/secret string
+    var keysecret_64 = new Buffer(keysecret).toString('base64');
+
+    // oAuth URL
+    var url = "https://api.twitter.com/oauth2/token";
+
+    // oAuth POST header
+    var headers = {
+      'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+      'Authorization':'Basic '+ keysecret_64
+    };
+
+    request.post({url:url,headers:headers,formData: {'grant_type':'client_credentials'}}, function(error, response, body) {
+      if (!error) {
+        var token = JSON.parse(body).access_token;
+      // get tweets
+        request({'url':'https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=therealmaxf',
+                 'headers': { 'Authorization':'Bearer ' + token }
+                }, function (error, response, body) {
+                  if (!error) {
+                    return res.send(body);
+                  }
+                });
+     }
+    });
   }
 };
