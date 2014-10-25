@@ -34,11 +34,10 @@ exports.getToken = function(callback) {
   });
 };
 
-exports.getTweets = function(authObject, lat, lon, callback) {
+exports.getTweets = function(word, authObject, lat, lon, callback) {
   var token = JSON.parse(authObject).access_token;
   // get tweets
-  var words = 'bike stolen';
-  var url = 'https://api.twitter.com/1.1/search/tweets.json?q='+encodeURIComponent(words)+'&geocode='+lat+','+lon+',1km';
+  var url = 'https://api.twitter.com/1.1/search/tweets.json?q='+encodeURIComponent(word)+'&geocode='+lat+','+lon+',1km';
   request({
     'url': url,
     'headers': { 'Authorization':'Bearer ' + token }

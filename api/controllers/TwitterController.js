@@ -7,23 +7,33 @@
 
 var request = require('request');
 var async = require('async');
-
 module.exports = {
 
   twitter: function (req, res) {
     'use strict';
     async.waterfall(
       [
-        function (callback) {
-          sails.services.twitter.getToken(callback);
-        },
+        function (callback) { sails.services.twitter.getToken(callback); },
         function (authObject, callback) {
-          sails.services.twitter.getTweets(authObject, req.query.lat, req.query.lon, callback);
+          var get = sails.services.twitter.getTweets;
+          async.parallel(
+            [
+              function (callback) { get('bike', authObject, req.query.lat, req.query.lon, callback); },
+              function (callback) { get('bicycle', authObject, req.query.lat, req.query.lon, callback); },
+              function (callback) { get('steal', authObject, req.query.lat, req.query.lon, callback); },
+              function (callback) { get('nicked', authObject, req.query.lat, req.query.lon, callback); },
+              function (callback) { get('theft', authObject, req.query.lat, req.query.lon, callback); }
+            ],
+            function (error, tweetArray) {
+              callback(null, tweetArray);
+            }
+          );
         }
       ],
-      function (error, tweets) {
+      function (error, results) {
+        console.log(results[3]);
         if (error) return res.send(error);
-        else return res.send(tweets);
+        else return res.json(results);
       }
     );
   }
