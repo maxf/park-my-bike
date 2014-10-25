@@ -1,9 +1,8 @@
-var Promise = require('promise');
 var request = require('request');
 
 
 
-exports.getToken = function() {
+exports.getToken = function(callback) {
   'use strict';
   var t = sails.config.twitter;
 
@@ -26,32 +25,24 @@ exports.getToken = function() {
     'Authorization':'Basic '+ keysecret_64
   };
 
-  return new Promise(function (fulfill, reject) {
-    request.post({
-      url:url,
-      headers:headers,
-      formData: {'grant_type':'client_credentials'}
-    },
-    function(error, response, body) {
-      if (error) reject(error);
-      else fulfill(body);
-    });
+  request.post({
+    url:url,
+    headers:headers,
+    formData: {'grant_type':'client_credentials'}
+  }, function(error, response, body) {
+    callback(null, body);
   });
-
 };
 
-exports.getTweets = function(authObject, lat, lon) {
+exports.getTweets = function(authObject, lat, lon, callback) {
   var token = JSON.parse(authObject).access_token;
   // get tweets
   var words = 'bike stolen';
   var url = 'https://api.twitter.com/1.1/search/tweets.json?q='+encodeURIComponent(words)+'&geocode='+lat+','+lon+',1km';
-  return new Promise(function (fulfill, reject) {
-    request({
-      'url': url,
-      'headers': { 'Authorization':'Bearer ' + token }
+  request({
+    'url': url,
+    'headers': { 'Authorization':'Bearer ' + token }
     }, function (error, response, body) {
-      if (error) reject(error);
-      else fulfill(JSON.parse(body));
+        callback(null, JSON.parse(body));
     });
-  });
 };
