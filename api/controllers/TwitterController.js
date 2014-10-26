@@ -11,6 +11,8 @@ module.exports = {
 
   twitter: function (req, res) {
     'use strict';
+
+    var lat = req.query.lat, lon = req.query.lon;
     async.waterfall(
       [
         function (callback) { sails.services.twitter.getToken(callback); },
@@ -18,12 +20,12 @@ module.exports = {
           var get = sails.services.twitter.getTweets;
           async.parallel(
             [
-              function (callback) { get('bike', authObject, req.query.lat, req.query.lon, callback); },
-              function (callback) { get('bicycle', authObject, req.query.lat, req.query.lon, callback); },
-              function (callback) { get('steal', authObject, req.query.lat, req.query.lon, callback); },
-              function (callback) { get('stolen', authObject, req.query.lat, req.query.lon, callback); },
-              function (callback) { get('nicked', authObject, req.query.lat, req.query.lon, callback); },
-              function (callback) { get('theft', authObject, req.query.lat, req.query.lon, callback); }
+              function (callback) { get('bike', authObject, lat, lon, callback); },
+              function (callback) { get('bicycle', authObject, lat, lon, callback); },
+              function (callback) { get('steal', authObject, lat, lon, callback); },
+              function (callback) { get('stolen', authObject, lat, lon, callback); },
+              function (callback) { get('nicked', authObject, lat, lon, callback); },
+              function (callback) { get('theft', authObject, lat, lon, callback); }
             ],
             function (error, tweetArray) {
               callback(null, tweetArray);
@@ -43,7 +45,14 @@ module.exports = {
             }
           }
         });
-        console.log(r);
+
+        for (var i=0; i<r.length; i++) {
+          // weigh score by some distance measure between tweet and location
+          r[i].bikeScore *=
+            ((lat-r[i].geo.coordinates[1])*(lat-r[i].geo.coordinates[1]) +
+            (lon-r[i].geo.coordinates[0])*(lon-r[i].geo.coordinates[0]))-5320;
+        }
+
         return res.json(r.sort(function(tweet1, tweet2) { return tweet2.bikeScore - tweet1.bikeScore; }));
       }
     );

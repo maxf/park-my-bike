@@ -37,11 +37,11 @@ exports.getToken = function(callback) {
 exports.getTweets = function(word, authObject, lat, lon, callback) {
   var token = JSON.parse(authObject).access_token;
   // get tweets
-  var url = 'https://api.twitter.com/1.1/search/tweets.json?q='+encodeURIComponent(word)+'&geocode='+lat+','+lon+',1km';
+  var url = 'https://api.twitter.com/1.1/search/tweets.json?count=100&q='+encodeURIComponent(word)+'&geocode='+lat+','+lon+',1km';
   request({
     'url': url,
     'headers': { 'Authorization':'Bearer ' + token }
     }, function (error, response, body) {
-        callback(null, JSON.parse(body).statuses);
+      callback(null, JSON.parse(body).statuses);
     });
 };
