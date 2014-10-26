@@ -42,6 +42,6 @@ exports.getTweets = function(word, authObject, lat, lon, callback) {
     'url': url,
     'headers': { 'Authorization':'Bearer ' + token }
     }, function (error, response, body) {
-        callback(null, JSON.parse(body));
+        callback(null, JSON.parse(body).statuses);
     });
 };
