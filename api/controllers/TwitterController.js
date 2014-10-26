@@ -21,6 +21,7 @@ module.exports = {
               function (callback) { get('bike', authObject, req.query.lat, req.query.lon, callback); },
               function (callback) { get('bicycle', authObject, req.query.lat, req.query.lon, callback); },
               function (callback) { get('steal', authObject, req.query.lat, req.query.lon, callback); },
+              function (callback) { get('stolen', authObject, req.query.lat, req.query.lon, callback); },
               function (callback) { get('nicked', authObject, req.query.lat, req.query.lon, callback); },
               function (callback) { get('theft', authObject, req.query.lat, req.query.lon, callback); }
             ],
@@ -31,9 +32,19 @@ module.exports = {
         }
       ],
       function (error, results) {
-        console.log(results[3]);
         if (error) return res.send(error);
-        else return res.json(results);
+        var r = results.reduce(function(a,b) { return a.concat(b); });
+        // score tweet depending on words they contain
+        for (var i=0; i<r.length; i++) r[i].bikeScore=0;
+        ['bike', 'bicycle', 'steal', 'nicked', 'theft', 'stolen'].forEach(function(word) {
+          for (var i=0; i<r.length; i++) {
+            if (r[i].text.toLowerCase().indexOf(word) != -1) {
+              r[i].bikeScore++;
+            }
+          }
+        });
+        console.log(r);
+        return res.json(r.sort(function(tweet1, tweet2) { return tweet2.bikeScore - tweet1.bikeScore; }));
       }
     );
   }
