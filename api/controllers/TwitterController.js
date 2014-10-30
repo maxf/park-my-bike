@@ -36,6 +36,10 @@ module.exports = {
       function (error, results) {
         if (error) return res.send(error);
         var r = results.reduce(function(a,b) { return a.concat(b); });
+
+        // remove tweets without geo
+        r = r.filter(function (t) { return t.geo; });
+
         // score tweet depending on words they contain
         for (var i=0; i<r.length; i++) r[i].bikeScore=0;
         ['bike', 'bicycle', 'steal', 'nicked', 'theft', 'stolen'].forEach(function(word) {
